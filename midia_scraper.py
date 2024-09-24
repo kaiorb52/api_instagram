@@ -2,13 +2,14 @@
 
 import pandas as pd
 import time
+import os
 from datetime import datetime
 from datetime import timedelta, datetime
 from constants import dia_atual,ontem, run
 from functions import format_date
 
 
-def midia_sraper(client, urls, midia, 
+def midia_sraper(client, dados, midia, 
   data = (datetime.today() - timedelta(days = 1)).strftime("%Y-%m-%d"), daily = True):
   
   df_final   = pd.DataFrame()
@@ -35,9 +36,12 @@ def midia_sraper(client, urls, midia,
   if daily == True and dia_semana == 0:
     data = (datetime.today() - timedelta(days = 2)).strftime("%Y-%m-%d") 
   
-  for url in urls:
+  for candidato in dados:
+    for url in candidato:
       i = i + 1
-
+      print(i)
+      print(url)
+    
       if midia == "instagram":
         run_input = {
             "addParentData": False,
@@ -65,18 +69,23 @@ def midia_sraper(client, urls, midia,
       for item in client.dataset(run["defaultDatasetId"]).iterate_items():
           # post_date = item.get(time_var)
           # date_obj  = datetime.strptime(post_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-          df_temp   = pd.DataFrame()
+          df_temp  = pd.DataFrame()
           
-          df_temp = pd.DataFrame([item])
+          df_temp  = pd.DataFrame([item])
 
           df_final = pd.concat([df_final, df_temp], ignore_index=True)
           
       time.sleep(1)
       
-      if i == 50:
-        i = 0
-        time.sleep(500)
-        
+      # if i == 50:
+      #   i = 0
+      #   time.sleep(500)
+  
+  dirs = os.listdir()
+  
+  if 'data' in dirs == False:
+    os.mkdir('data')
+    
   df_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
   print("tempo final do script:", datetime.today())
 
