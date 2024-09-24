@@ -1,1 +1,7 @@
 myenv
+.Rproj.user
+.Rhistory
+api_instagram.Rproj
+__pycache__/
+
+data/
