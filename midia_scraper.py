@@ -4,29 +4,36 @@ import pandas as pd
 import time
 from datetime import datetime
 from datetime import timedelta, datetime
-from constants import dia_atual,ontem, run, x
+from constants import dia_atual,ontem, run
 from functions import format_date
 
-def midia_sraper(client, urls, midia, inicio):
+
+def midia_sraper(client, urls, midia, 
+  data = (datetime.today() - timedelta(days = 1)).strftime("%Y-%m-%d"), daily = True):
   
-  df_final = pd.DataFrame()
-  inicio   = datetime.today()
-  i        = 0
+  df_final   = pd.DataFrame()
+  inicio     = datetime.today()
+  i          = 0
+  dia_semana = dia_atual.weekday()
   
+  print("post de antes de:", data)
   print("tempo de inicio:", inicio)
   print(f"raspando {midia}...")
   
   if midia == "instagram":
-    n_post     = 5
-    n_weekends = n_post * 2
+    n_post     = 300
+    #n_weekends = n_post * 2
     api        = "shu8hvrXbJbY3Eb9W"
     time_var   = "timestamp"
   
   if midia == "facebook":
-    n_post     = 2
-    n_weekends = n_post * 2
+    n_post     = 200
+    #n_weekends = n_post * 2
     api        = "KoJrdxJCTtpon81KY"
     time_var   = "time"
+  
+  if daily == True and dia_semana == 0:
+    data = (datetime.today() - timedelta(days = 2)).strftime("%Y-%m-%d") 
   
   for url in urls:
       i = i + 1
@@ -34,12 +41,12 @@ def midia_sraper(client, urls, midia, inicio):
       if midia == "instagram":
         run_input = {
             "addParentData": False,
-            "directUrls": [url],                              # Url do candidato
+            "directUrls": [url],                        # Url do candidato
             "enhanceUserSearchWithFacebookPage": False,
             "isUserReelFeedURL": False,
             "isUserTaggedFeedURL": False,
-            "onlyPostsNewerThan": "2024-09-01",
-            "resultsLimit": n_post if x != 0 else n_weekends, # N de resulados (caso for segunda 6 resultados)
+            "onlyPostsNewerThan": data,                 # >= data
+            "resultsLimit": n_post,                     # N de resulados
             "resultsType": "posts",
             "searchLimit": 1
         }
@@ -47,7 +54,8 @@ def midia_sraper(client, urls, midia, inicio):
       if midia == "facebook":
         run_input = {
           "startUrls": [{ "url": url}],
-          "resultsLimit": n_post if x != 0 else n_weekends, 
+          "onlyPostsNewerThan": data,
+          "resultsLimit": n_post, 
         }
 
       # Chamando a API e obtendo os resultados
@@ -55,8 +63,8 @@ def midia_sraper(client, urls, midia, inicio):
 
       # Iterando sobre os itens retornados pela API
       for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-          post_date = item.get(time_var)
-          date_obj  = datetime.strptime(post_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+          # post_date = item.get(time_var)
+          # date_obj  = datetime.strptime(post_date, '%Y-%m-%dT%H:%M:%S.%fZ')
           df_temp   = pd.DataFrame()
           
           df_temp = pd.DataFrame([item])
