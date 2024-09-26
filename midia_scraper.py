@@ -9,10 +9,16 @@ from constants import dia_atual,ontem, run
 from functions import format_date
 
 
-def midia_sraper(client, dados, midia, 
-  data = (datetime.today() - timedelta(days = 1)).strftime("%Y-%m-%d"), daily = True):
-  
-  df_final   = pd.DataFrame()
+def midia_sraper(
+  client, 
+  df, 
+  midia, 
+  data = (datetime.today() - timedelta(days = 1)).strftime("%Y-%m-%d"), 
+  daily = True):
+    
+  midia_var  = midia + '_list'
+  dados      = df[midia_var]
+  df_perma   = pd.DataFrame()
   inicio     = datetime.today()
   dia_semana = dia_atual.weekday()
   i          = 0
@@ -73,7 +79,7 @@ def midia_sraper(client, dados, midia,
           df_temp  = pd.DataFrame()
           df_temp  = pd.DataFrame([item])
 
-          df_final = pd.concat([df_final, df_temp], ignore_index=True)
+          df_perma = pd.concat([df_perma, df_temp], ignore_index=True)
           
       time.sleep(1)
       
@@ -85,7 +91,17 @@ def midia_sraper(client, dados, midia,
   
   if ('data' in dirs) == False:
     os.mkdir('data')
-    
-  df_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
+  
+  df_all_urls = df.explode(midia_var)
+  
+  results_final = pd.merge(
+    df_all_urls,              # O dataframe à esquerda (dados_teste)
+    df_perma,                 # O dataframe à direita (dados_result)
+    left_on    = midia_var,   # A coluna do lado esquerdo (instagram_list)
+    right_on   = 'inputUrl',  # A coluna do lado direito (inputUrl)
+    how        = 'left'       # Tipo de join (left join)
+  )
+  
+  results_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
   print("tempo final do script:", datetime.today())
 
