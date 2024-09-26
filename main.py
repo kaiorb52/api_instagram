@@ -11,8 +11,10 @@ from midia_scraper import midia_sraper
 # insta_urls_test = insta_urls[0:2]
 # face_urls_test  = face_urls[0:2]
 
+dados_teste = dados_candidatos.iloc[0:1]
+
 while run == True:
-    midia_sraper(client, instagram_test, "instagram", data = "2024-09-16", daily = False)
-    midia_sraper(client, facebook_test,  "facebook", data = "2024-09-16", daily = False)
+    midia_sraper(client, dados_teste['instagram'], "instagram", data = "2024-09-20", daily = False)
+    #midia_sraper(client, dados_teste['facebook_list'],  "facebook", data = "2024-09-20", daily = False)
     run = False
 

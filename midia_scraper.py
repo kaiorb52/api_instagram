@@ -14,8 +14,8 @@ def midia_sraper(client, dados, midia,
   
   df_final   = pd.DataFrame()
   inicio     = datetime.today()
-  i          = 0
   dia_semana = dia_atual.weekday()
+  i          = 0
   
   print("post de antes de:", data)
   print("tempo de inicio:", inicio)
@@ -69,8 +69,8 @@ def midia_sraper(client, dados, midia,
       for item in client.dataset(run["defaultDatasetId"]).iterate_items():
           # post_date = item.get(time_var)
           # date_obj  = datetime.strptime(post_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-          df_temp  = pd.DataFrame()
           
+          df_temp  = pd.DataFrame()
           df_temp  = pd.DataFrame([item])
 
           df_final = pd.concat([df_final, df_temp], ignore_index=True)
@@ -83,7 +83,7 @@ def midia_sraper(client, dados, midia,
   
   dirs = os.listdir()
   
-  if 'data' in dirs == False:
+  if ('data' in dirs) == False:
     os.mkdir('data')
     
   df_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
