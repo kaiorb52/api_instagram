@@ -3,7 +3,6 @@
 import pandas as pd
 import time
 import os
-from datetime import datetime
 from datetime import timedelta, datetime
 from constants import dia_atual,ontem, run
 from functions import format_date
@@ -29,13 +28,11 @@ def midia_sraper(
   
   if midia == "instagram":
     n_post     = 300
-    #n_weekends = n_post * 2
     api        = "shu8hvrXbJbY3Eb9W"
     time_var   = "timestamp"
   
   if midia == "facebook":
     n_post     = 200
-    #n_weekends = n_post * 2
     api        = "KoJrdxJCTtpon81KY"
     time_var   = "time"
   
@@ -45,9 +42,7 @@ def midia_sraper(
   for candidato in dados:
     for url in candidato:
       i = i + 1
-      print(i)
-      print(url)
-    
+
       if midia == "instagram":
         run_input = {
             "addParentData": False,
@@ -63,9 +58,9 @@ def midia_sraper(
 
       if midia == "facebook":
         run_input = {
-          "startUrls": [{ "url": url}],
-          "onlyPostsNewerThan": data,
-          "resultsLimit": n_post, 
+          "startUrls": [{ "url": url}],                # Url do candidato
+          "onlyPostsNewerThan": data,                  # >= data
+          "resultsLimit": n_post,                      # N de resulados
         }
 
       # Chamando a API e obtendo os resultados
@@ -73,35 +68,35 @@ def midia_sraper(
 
       # Iterando sobre os itens retornados pela API
       for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-          # post_date = item.get(time_var)
-          # date_obj  = datetime.strptime(post_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-          
+
           df_temp  = pd.DataFrame()
           df_temp  = pd.DataFrame([item])
 
           df_perma = pd.concat([df_perma, df_temp], ignore_index=True)
           
-      time.sleep(1)
+      time.sleep(2)
       
-      # if i == 50:
-      #   i = 0
-      #   time.sleep(500)
-  
-  dirs = os.listdir()
-  
-  if ('data' in dirs) == False:
-    os.mkdir('data')
+      if i == 50:
+        i = 0
+        time.sleep(100)
   
   df_all_urls = df.explode(midia_var)
   
   results_final = pd.merge(
-    df_all_urls,              # O dataframe à esquerda (dados_teste)
-    df_perma,                 # O dataframe à direita (dados_result)
+    df_all_urls,             
+    df_perma,                
     left_on    = midia_var,   # A coluna do lado esquerdo (instagram_list)
     right_on   = 'inputUrl',  # A coluna do lado direito (inputUrl)
     how        = 'left'       # Tipo de join (left join)
   )
   
-  results_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
-  print("tempo final do script:", datetime.today())
+  # if ('data' in os.listdir()) == False:
+  #   os.mkdir('data')
+  # 
+  # results_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
+
+  # table_id = "projeto.dataset.tabela"
+  # send_to_bigquery(results_final, table_id)
+
+  print(f"tempo final da raspasgem do {midia}:", datetime.today())
 
