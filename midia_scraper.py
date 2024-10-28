@@ -38,39 +38,53 @@ def midia_sraper(
   
   if daily == True and dia_semana == 0:
     data = (datetime.today() - timedelta(days = 2)).strftime("%Y-%m-%d") 
-  
-  for candidato in dados:
+    
+  for idx, candidato in enumerate(dados):
+    #for candidato in dados:
+    candidato_id = df.loc[idx, 'ID']
     for url in candidato:
       i = i + 1
 
       if midia == "instagram":
         run_input = {
             "addParentData": False,
-            "directUrls": [url],                        # Url do candidato
+            "directUrls": [url],              # Url do candidato
             "enhanceUserSearchWithFacebookPage": False,
             "isUserReelFeedURL": False,
             "isUserTaggedFeedURL": False,
-            "onlyPostsNewerThan": data,                 # >= data
-            "resultsLimit": n_post,                     # N de resulados
+            "onlyPostsNewerThan": data,       # >= data
+            "resultsLimit": n_post,           # N de resulados
             "resultsType": "posts",
             "searchLimit": 1
         }
+        colunas = [
+          'CandidatoID',                      # Variavel utilizada para o join no final do script
+          'inputUrl', 'id', 'type', 'shortCode', 'caption', 'url',
+          'commentsCount', 'likesCount', 'videoViewCount', 'videoPlayCount',
+          'timestamp', 'ownerFullName', 'ownerUsername', 'ownerId'
+        ]
+
 
       if midia == "facebook":
         run_input = {
-          "startUrls": [{ "url": url}],                # Url do candidato
-          "onlyPostsNewerThan": data,                  # >= data
-          "resultsLimit": n_post,                      # N de resulados
+          "startUrls": [{ "url": url}],       # Url do candidato
+          "onlyPostsNewerThan": data,         # >= data
+          "resultsLimit": n_post,             # N de resulados
         }
+        colunas = [
+          'CandidatoID'
+        ]
 
+      
       # Chamando a API e obtendo os resultados
       run = client.actor(api).call(run_input = run_input)
 
       # Iterando sobre os itens retornados pela API
       for item in client.dataset(run["defaultDatasetId"]).iterate_items():
 
-          df_temp  = pd.DataFrame()
+          df_temp  = pd.DataFrame(columns=colunas)
           df_temp  = pd.DataFrame([item])
+          df_temp['CandidatoID'] = candidato_id
 
           df_perma = pd.concat([df_perma, df_temp], ignore_index=True)
           
@@ -79,24 +93,29 @@ def midia_sraper(
       if i == 50:
         i = 0
         time.sleep(100)
+      
+  results   = df_perma[colunas]
   
-  df_all_urls = df.explode(midia_var)
-  
-  results_final = pd.merge(
-    df_all_urls,             
-    df_perma,                
-    left_on    = midia_var,   # A coluna do lado esquerdo (instagram_list)
-    right_on   = 'inputUrl',  # A coluna do lado direito (inputUrl)
-    how        = 'left'       # Tipo de join (left join)
+  results_f = pd.merge(
+    df,             
+    results,                
+    left_on    = 'ID',
+    right_on   = 'CandidatoID',  
+    how        = 'left'      
   )
+          
+  # credentials = service_account.Credentials.from_service_account_file('bq_auth.json')
+
+  # project_id = 'uc3m-autoridades'
+  # dataset_id = 'monitoramento'
+  # table_name = 'prefeitos_scrapper_facebook'
+  # path = f'{project_id}.{dataset_id}.{table_name}'
+
+  # upload_bigquery(credentials, project_id, path, results_final, 'overwrite')
   
   # if ('data' in os.listdir()) == False:
-  #   os.mkdir('data')
-  # 
-  # results_final.to_csv(f'data/{midia}_{inicio}.csv', index=False)
-
-  # table_id = "projeto.dataset.tabela"
-  # send_to_bigquery(results_final, table_id)
+  #  os.mkdir('data')
+  # results_f.to_csv(f'data/{midia}_{inicio}.csv', index=False)
 
   print(f"tempo final da raspasgem do {midia}:", datetime.today())
 

@@ -5,3 +5,4 @@ api_instagram.Rproj
 __pycache__/
 
 data/
+bq_auth.json

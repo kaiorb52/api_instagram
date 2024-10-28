@@ -1,17 +1,22 @@
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# credentials = service_account.Credentials.from_service_account_file('path.json')
-# client = bigquery.Client(credentials=credentials, project=credentials.project_id)
+def upload_bigquery(credentials, project_id, path, df, modo_carregamento=None):
+    try:
+        job_config = bigquery.LoadJobConfig()
+        job_config.autodetect = False
+        job_config.write_disposition = bigquery.WriteDisposition.WRITE_APPEND if modo_carregamento == 'append' else bigquery.WriteDisposition.WRITE_TRUNCATE
 
-def send_to_bigquery(df, table_id):
-    job_config = bigquery.LoadJobConfig(
-        write_disposition=bigquery.WriteDisposition.WRITE_APPEND,  
-        autodetect=True,  
-    )
+        client = bigquery.Client(credentials=credentials, project=project_id)
+        load_job = client.load_table_from_dataframe(df, path, job_config=job_config)
+        load_job.result()  # Espera o job finalizar
 
-    job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
-    job.result()
+        print("Upload para o BigQuery realizado com sucesso.")
 
-    table = client.get_table(table_id)
-    print(f"Carregado {table.num_rows} linhas para a tabela {table_id}.")
+    except Exception as e:
+        print(f"Erro ao fazer upload para o BigQuery: {e}")
+
+
+# Exemplo de uso:
+# credentials = service_account.Credentials.from_service_account_file('path/to/credentials.json')
+# upload_bigquery(credentials, 'meu_projeto', 'meu_dataset', 'minha_tabela', df, 'append')

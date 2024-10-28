@@ -15,7 +15,6 @@ dados_teste = dados_candidatos.iloc[0:2]
 while run == True:
     midia_sraper(client, dados_teste, "instagram", data = "2024-10-08", daily = False)
     #midia_sraper(client, dados_teste, "facebook", data = "2024-09-20", daily = False)
-    #midia_sraper(client, dados_teste['facebook_list'],  "facebook", data = "2024-09-20", daily = False)
     print("tempo final do script:", datetime.today())
 
     run = False
